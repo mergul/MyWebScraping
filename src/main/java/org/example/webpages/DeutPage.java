@@ -1,0 +1,46 @@
+package org.example.webpages;
+
+import org.example.base.Content;
+import org.example.base.PageObject;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.How;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class DeutPage extends PageObject {
+    private static final String PAGE_URL="https://www.dw.com/tr/g%C3%BCndem/s-10201";
+
+    @FindBy(how = How.XPATH, using = "//*[@id='headerKarussell']//div[contains(@class, 'imgTeaser')]")
+    protected List<WebElement> articles;
+
+    protected DeutPage(WebDriver driver) {
+        super(driver);
+    }
+    public static DeutPage go(WebDriver driver) {
+        driver.get(PAGE_URL);
+        return new DeutPage(driver);
+    }
+    @Override
+    protected void onLoad() {
+        waitFor(articles, "Deutsche Welle");
+    }
+    public List<Content> getArticles() {
+        List<Content> contentList=new ArrayList<>();
+        for (WebElement article : articles) {
+            Actions actions = new Actions(driver);
+            actions.moveToElement(article).perform();
+            imgIsReady(article.findElement(By.tagName("img")), "deut img is visible");
+            String he = article.findElement(By.tagName("img")).getAttribute("src");
+            String be = article.getText();
+            contentList.add(new Content(he, be, new ArrayList<>()));
+            System.out.println("başlık ::=> " + he);
+            System.out.println("konu ::=> " + be);
+        }
+        return contentList;
+    }
+}
