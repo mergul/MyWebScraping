@@ -60,7 +60,7 @@ public class DevTest {
         DesiredCapabilities capabilities = new DesiredCapabilities();
         capabilities.setCapability("goog:loggingPrefs", logs);
         capabilities.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
-        options.setPageLoadStrategy(PageLoadStrategy.NONE);
+        options.setPageLoadStrategy(PageLoadStrategy.EAGER);
 
         options.setExperimentalOption("prefs", prefs);
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);

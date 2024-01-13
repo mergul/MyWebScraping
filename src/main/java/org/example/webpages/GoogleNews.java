@@ -15,7 +15,6 @@ import org.openqa.selenium.support.ui.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,7 @@ public class GoogleNews extends PageObject {
     @FindBy(how = How.XPATH, using = "//main/div[2]//section//article")
     @CacheLookup
     protected List<WebElement> articles;
+    private  int len;
 
     protected GoogleNews(WebDriver driver) {
         super(driver);
@@ -36,7 +36,7 @@ public class GoogleNews extends PageObject {
 
     @Override
     protected void onLoad() {
-        domIsReady("amnesty page dom is ready");
+        //domIsReady("amnesty page dom is ready");
         waitFor(articles, "amnesty page");
     }
     public static GoogleNews go(WebDriver driver) {
@@ -45,7 +45,7 @@ public class GoogleNews extends PageObject {
     }
     public List<Content> getArticles() {
         List<Content> contentList=new ArrayList<>();
-        int len=Math.min(articles.size(), 10);
+        len=Math.min(articles.size(), 10);
         for (int i=0; i<len; i++) {
             WebElement article = articles.get(i);
             List<WebElement> hez = article.findElements(By.tagName("a"));
@@ -56,22 +56,22 @@ public class GoogleNews extends PageObject {
         }
         return contentList;
     }
-    public List<Content> getDetails() throws InterruptedException, IOException {
+    public List<Content> getDetails() throws InterruptedException {
         List<Content> contentList=new ArrayList<>();
         Actions actions=new Actions(driver);
         String originalWindow = driver.getWindowHandle();
         Wait<WebDriver> wait =
                 new FluentWait<>(driver)
-                        .withTimeout(Duration.ofSeconds(2))
-                        .pollingEvery(Duration.ofMillis(300))
+                        .withTimeout(Duration.ofSeconds(5))
+                        .pollingEvery(Duration.ofMillis(500))
                         .ignoring(ElementNotInteractableException.class);
-        for (int i=0; i<10; i++) {
+        for (int i=0; i<len; i++) {
             WebElement article = articles.get(i);
             List<WebElement> hez = article.findElements(By.tagName("a"));
             log.info("getDetails -> "+hez.get(1).getAttribute("href"));
             actions.moveToElement(hez.get(1)).click().perform();
+          //  Thread.sleep(2000L);
             wait.until(numberOfWindowsToBe(2));
-            Thread.sleep(2000L);
             for (String windowHandle : driver.getWindowHandles()) {
                 if(!originalWindow.contentEquals(windowHandle)) {
                     driver.switchTo().window(windowHandle);
@@ -80,8 +80,9 @@ public class GoogleNews extends PageObject {
             }
            // wait.until(titleIs("Selenium documentation"));
             GNewsDetails gNewsDetails= GNewsDetails.go(driver);
+           // Thread.sleep(2000L);
             contentList.add(gNewsDetails.checkHtml());
-            Thread.sleep(2000L);
+           // Thread.sleep(2000L);
             driver.close();
             driver.switchTo().window(originalWindow);
         }
