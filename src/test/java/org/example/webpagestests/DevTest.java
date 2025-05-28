@@ -160,54 +160,63 @@ public class DevTest {
 
     @Test
     public void applyAmnestyUpload() throws InterruptedException, IOException {
-        YoutubePage youtubePage= YoutubePage.go(decorated,"gigi");
-        YoutubeEmbedPage embedPage=youtubePage.getEmbeddedVideo();
-        String embedCode=embedPage.getEmbedCode();
-        AmnestyFeed amnesty = AmnestyFeed.go(decorated);
-        List<Content> articles = amnesty.getArticles();
-        List<Content> details=amnesty.getDetails();
-        Map<Integer, List<String>> listMap=new HashMap<Integer, List<String>>();
-        for (int i=0; i<3; i++) {
-            Content article = articles.get(i);
-            Content detail = details.get(i);
-            String con=detail.getInner();
-            String cont=article.getInner();
-            log.info("GTranslate detail -> "+con);
-            StringBuilder translated= new StringBuilder();
-            String txt=article.getTitle()+" <> "+cont+" <> "+con;
-            String[] stooges = txt.split("(?<=\\G.{4999})");
-            for (String myTxt: stooges) {
-                TranslatedPage translatedPage = GTranslate.go(decorated, "en", "tr",myTxt);
-                translated.append(translatedPage.getTextOf());
-                Thread.sleep(2L);
+        ChromeDriver amnestyDriver = UndetectedChromeSetup.createUndetectedChrome();
+        try {
+//
+//        YoutubePage youtubePage= YoutubePage.go(decorated,"gigi");
+//        YoutubeEmbedPage embedPage=youtubePage.getEmbeddedVideo();
+//        String embedCode=embedPage.getEmbedCode();
+            AmnestyFeed amnesty = AmnestyFeed.go(amnestyDriver);
+            List<Content> articles = amnesty.getArticles();
+            List<Content> details = amnesty.getDetails();
+            Map<Integer, List<String>> listMap = new HashMap<Integer, List<String>>();
+            for (int i = 0; i < 3; i++) {
+                Content article = articles.get(i);
+                Content detail = details.get(i);
+                String con = detail.getInner();
+                String cont = article.getInner();
+                log.info("GTranslate detail -> " + con);
+                StringBuilder translated = new StringBuilder();
+                String txt = article.getTitle() + " <> " + cont + " <> " + con;
+                String[] stooges = txt.split("(?<=\\G.{4999})");
+                for (String myTxt : stooges) {
+                    TranslatedPage translatedPage = GTranslate.go(decorated, "en", "tr", myTxt);
+                    translated.append(translatedPage.getTextOf());
+                    Thread.sleep(2L);
+                }
+                article.setTranslated(String.valueOf(translated));
+                log.info("GTranslate -> " + article.getTranslated());
+                GooPicsPage picsPage = GooPicsPage.go(decorated, article.getTitle());
+                List<String> allHref = picsPage.findImagesBase64(article.getTitle().substring(0, Math.min(article.getTitle().length(), 20)).replace("/", "").trim());
+                log.info(allHref.toString());
+                List<String> externalUrls = new ArrayList<>(Collections.unmodifiableList(picsPage.findMyRawImages()));
+                listMap.put(i, externalUrls);
+                log.info("externalUrls -> " + externalUrls);
+                article.getObjects().addAll(Collections.unmodifiableList(allHref));
             }
-            article.setTranslated(String.valueOf(translated));
-            log.info("GTranslate -> "+article.getTranslated());
-            GooPicsPage picsPage = GooPicsPage.go(decorated, article.getTitle());
-            List<String> allHref=picsPage.findImagesBase64(article.getTitle().substring(0, Math.min(article.getTitle().length(), 20)).replace("/", "").trim());
-            log.info(allHref.toString());
-            List<String> externalUrls = new ArrayList<>(Collections.unmodifiableList(picsPage.findMyRawImages()));
-            listMap.put(i, externalUrls);
-            log.info("externalUrls -> "+ externalUrls);
-            article.getObjects().addAll(Collections.unmodifiableList(allHref));
-        }
 //        for (Content content : articles) {
 //            GooPicsPage picsPage = GooPicsPage.go(decorated, content.getTitle());
 //            List<String> allHref=picsPage.findImages();
 //            content.getHref().addAll(Collections.unmodifiableList(allHref));
 //        }
-        SignPage signPage = SignPage.go(decorated);
-        LoginPage loginPage = signPage.login();
+            SignPage signPage = SignPage.go(decorated);
+            LoginPage loginPage = signPage.login();
 //        ProfilePage profilePage = loginPage.loginMe("ergul_mesut@yahoo.com", "Salacak123");
-        ProfilePage profilePage = loginPage.loginMe("ergul_mesut@hotmail.com", "Merina75");
-        for (int i=0; i<3; i++) {
-            Content article = articles.get(i);
-            UploadPage uploadPage = profilePage.goUpload();
-            String[] myStrings=article.getTranslated().split("<>");
-            log.info("translated details-> "+ Arrays.toString(myStrings));
-            profilePage = uploadPage.uploadContent(myStrings.length == 1 ? "empty topic"+" #gigi" : myStrings[0]+" #gigi", myStrings.length > 1 ? myStrings[1] : myStrings[0], listMap.get(i), article.getObjects(), embedCode, details.get(i).getObjects());
-           // profilePage.isUploaded();
-            Thread.sleep(3000L);
+            ProfilePage profilePage = loginPage.loginMe("ergul_mesut@hotmail.com", "Merina75");
+            for (int i = 0; i < 3; i++) {
+                Content article = articles.get(i);
+                UploadPage uploadPage = profilePage.goUpload();
+                String[] myStrings = article.getTranslated().split("<>");
+                log.info("translated details-> " + Arrays.toString(myStrings));
+                profilePage = uploadPage.uploadContent(myStrings.length == 1 ? "empty topic" + " #gigi" : myStrings[0] + " #gigi", myStrings.length > 1 ? myStrings[1] : myStrings[0], listMap.get(i), article.getObjects(), "embedCode", details.get(i).getObjects());
+                // profilePage.isUploaded();
+                Thread.sleep(3000L);
+            }
+        } finally {
+            // Ensure the amnestyDriver is closed after use
+            if (amnestyDriver != null) {
+                amnestyDriver.quit();
+            }
         }
     }
     @Test
@@ -288,6 +297,11 @@ public class DevTest {
         lemondePage.downloadTableHtml();
     }
     @Test
+    public void applyExcelTableAtlas() {
+        AtlasPage atlasPage = AtlasPage.go(decorated);
+        atlasPage.getMitable();
+    }
+    @Test
     public void applyDemoDetailsHtml() {
         DemoDetails demoDetails = DemoDetails.go(decorated,"https://www.democracynow.org/2020/6/5/stuart_schrader_police_militarization");
         Content content = demoDetails.checkHtml();
@@ -304,13 +318,17 @@ public class DevTest {
         }
     }
     @Test
-    public void applyGNews() throws IOException, InterruptedException {
+    public void applyGNews() throws InterruptedException {
         GoogleNews googleNews = GoogleNews.go(decorated);
         List<Content> contents=googleNews.getArticles();
         List<Content> details=googleNews.getDetails();
 
-        log.info("applyGNews contents -> "+contents.get(0).getInner());
-        log.info("applyGNews details -> "+details.get(0).getInner());
+        for (Content content: contents){
+            log.info("applyGNews contents -> "+content.getInner());
+        }
+        for (Content content: details){
+            log.info("applyGNews details -> "+content.getInner());
+        }
     }
     @Test
     public void applyWikiPics() throws InterruptedException {

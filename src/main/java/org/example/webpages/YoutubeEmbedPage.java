@@ -25,7 +25,7 @@ public class YoutubeEmbedPage extends PageObject {
     @CacheLookup
     protected WebElement embed_button;
 
-    @FindBy(how = How.XPATH, using = "//*[@id='top-level-buttons-computed']/ytd-button-renderer/yt-button-shape/button[@aria-label='Share']")
+    @FindBy(how = How.XPATH, using = "//ytd-watch-metadata//*[@id=\"top-level-buttons-computed\"]/yt-button-view-model/button-view-model/button[@aria-label='Share']")
     @CacheLookup
     protected WebElement share_button;
 

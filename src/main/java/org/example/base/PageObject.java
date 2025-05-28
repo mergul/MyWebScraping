@@ -63,4 +63,41 @@ public abstract class PageObject {
     public boolean isElementPresent(WebElement element, By by) {
         return  !element.findElements(by).isEmpty();
     }
+    public void isframeAvailable(WebElement element) {
+        new WebDriverWait(driver, Duration.ofSeconds(15))
+                .until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(element));
+    }
+    public void handleAlternativeShadowAccess() {
+        try {
+            // Alternative approach - search for all shadow roots
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            String script =
+                    "function findInShadowDom(selector) {" +
+                            "  const walker = document.createTreeWalker(" +
+                            "    document.body," +
+                            "    NodeFilter.SHOW_ELEMENT," +
+                            "    null," +
+                            "    false" +
+                            "  );" +
+                            "  let node;" +
+                            "  while (node = walker.nextNode()) {" +
+                            "    if (node.shadowRoot) {" +
+                            "      const found = node.shadowRoot.querySelector(selector);" +
+                            "      if (found) return found;" +
+                            "    }" +
+                            "  }" +
+                            "  return null;" +
+                            "}" +
+                            "const checkbox = findInShadowDom('#recaptcha-anchor');" +
+                            "if (checkbox) { checkbox.click(); return true; }" +
+                            "return false;";
+
+            Boolean result = (Boolean) js.executeScript(script);
+            System.out.println("Alternative shadow access result: " + result);
+
+        } catch (Exception e) {
+            System.err.println("Alternative shadow access failed: " + e.getMessage());
+        }
+    }
+
 }

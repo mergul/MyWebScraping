@@ -5,14 +5,14 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.events.AbstractWebDriverEventListener;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 
-public class WebEventListener extends AbstractWebDriverEventListener {
+public class WebEventListener extends EventFiringDecorator<@NotNull WebDriver> {
     private static final Logger log = LoggerFactory.getLogger(WebEventListener.class);
 
     public void beforeNavigateTo(String url, WebDriver driver) {

@@ -10,7 +10,7 @@ import org.openqa.selenium.support.How;
 import java.time.Duration;
 
 public class SignPage extends PageObject {
-    private static final String PAGE_URL = "https://busra.nur/secure/sign";//"http://localhost:4200/secure/sign";
+    private static final String PAGE_URL = "https://busra.news/secure/sign";//"http://localhost:4200/secure/sign";
 
     @FindBy(how = How.XPATH, using = "//app-sign/div/ul/li[@rel='signin']")
     @CacheLookup
